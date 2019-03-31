@@ -74,25 +74,24 @@ public class CardService {
      * @param money 充值金额
      * @param sId   学号
      */
-    public boolean recharge(double money, String sId) {
+    public boolean recharge(BigDecimal money, String sId) {
         Connection connection = null;
         PreparedStatement addStatement = null;
         PreparedStatement subStatement = null;
-        ResultSet balanceSet = null;
+        ResultSet set = null;
         boolean result = false;
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             connection = DriverManager.getConnection(URL, USER, PASSWORD);
             BigDecimal balance = getBalance(sId);
-            BigDecimal decimalMoney = BigDecimal.valueOf(money);
             // 判断银行卡余额是否足够支付，够就执行卡金额加，银行卡余额减
-            if (balance.compareTo(decimalMoney) > 0) {
+            if (balance.compareTo(money) > 0) {
                 String addSql = "update card_sys.card set money = money + ?";
                 String subSql = "update card_sys.card set balance = balance - ?";
                 addStatement = connection.prepareStatement(addSql);
-                addStatement.setBigDecimal(1, decimalMoney);
+                addStatement.setBigDecimal(1, money);
                 subStatement = connection.prepareStatement(subSql);
-                subStatement.setBigDecimal(1, decimalMoney);
+                subStatement.setBigDecimal(1, money);
                 addStatement.executeUpdate();
                 subStatement.executeUpdate();
                 result = true;
@@ -101,8 +100,8 @@ public class CardService {
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         } finally {
-            close(connection, addStatement, balanceSet);
-            close(connection, subStatement, balanceSet);
+            close(connection, addStatement, set);
+            close(connection, subStatement, set);
         }
         return result;
     }
@@ -193,6 +192,30 @@ public class CardService {
         return money;
     }
 
+    public boolean shopping(String sId, BigDecimal unitPrice, BigDecimal num) {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet set = null;
+        boolean result = false;
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            connection = DriverManager.getConnection(URL, USER, PASSWORD);
+            BigDecimal price = unitPrice.multiply(num);
+            if (getMoney(sId).subtract(price).compareTo(BigDecimal.ZERO) > 0) {
+                String sql = "update card_sys.card set money = money - ?";
+                preparedStatement = connection.prepareStatement(sql);
+                preparedStatement.setBigDecimal(1, price);
+                preparedStatement.executeUpdate();
+                result = true;
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        } finally {
+            close(connection, preparedStatement, set);
+        }
+        return result;
+    }
+
     /**
      * 关闭全部
      *
@@ -205,6 +228,7 @@ public class CardService {
             try {
                 resultSet.close();
             } catch (SQLException e) {
+                e.printStackTrace();
             }
         }
         if (preparedStatement != null) {

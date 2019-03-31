@@ -1,3 +1,4 @@
+import java.math.BigDecimal;
 import java.util.Scanner;
 
 /**
@@ -34,32 +35,84 @@ public class MainShow {
             System.out.println("----------------请选择你的操作-------------");
             System.out.println("-----------------1、充值------------------");
             System.out.println("-----------------2、购物------------------");
-            System.out.println("-----------------3、退出------------------");
+            System.out.println("-----------------3、查询------------------");
+            System.out.println("-----------------4、退出------------------");
             int cho = scanner.nextInt();
-            if (cho == 1) {
-                System.out.println("------------卡余额为：" + cardService.getMoney(sId) + "------------");
-                System.out.println("--------------请输入充值金额-------------");
-                double money = scanner.nextDouble();
-                // 充值
-                if (cardService.recharge(money, sId)) {
-                    System.out.println("-------------充值成功-------------");
-                    System.out.println("-----------卡余额为：" + cardService.getMoney(sId) + "-----------");
-                } else {
-                    System.out.println("--------您绑定银行卡的金额不足!--------");
-                    System.out.println("--------银行卡的金额为：" + cardService.getBalance(sId) + "--------");
-                }
-
-            }
-            if (cho == 2) {
-                System.out.println("-----------------要买啥-------------------");
-            }
-            if (cho == 3) {
-                System.exit(0);
+            switch (cho) {
+                case 1:
+                    System.out.println("--------------请输入充值金额-------------");
+                    BigDecimal money = scanner.nextBigDecimal();
+                    // 充值
+                    if (cardService.recharge(money, sId)) {
+                        System.out.println("-------------充值成功-------------");
+                    } else {
+                        System.out.println("--------您绑定银行卡的金额不足!--------");
+                        System.out.println("--------银行卡的金额为：" + cardService.getBalance(sId) + "--------");
+                    }
+                    break;
+                case 2:
+                    System.out.println("--------------商品列表--------------");
+                    System.out.println("-----------1.橡皮 单价 1.0----------");
+                    System.out.println("-----------2.本子 单价 1.5----------");
+                    System.out.println("-----------3.圆珠笔 单价 2.0--------");
+                    BigDecimal reaser = new BigDecimal(1.0);
+                    BigDecimal book = new BigDecimal(1.5);
+                    BigDecimal pen = new BigDecimal(2.0);
+                    // 输入错误的可以重新输入
+                    while (true) {
+                        int chos = scanner.nextInt();
+                        switch (chos) {
+                            case 1:
+                                System.out.println("--------------要购买的数量--------------");
+                                BigDecimal num = scanner.nextBigDecimal();
+                                if (cardService.shopping(sId, reaser, num)) {
+                                    System.out.println("--------------购买成功--------------");
+                                } else {
+                                    System.out.println("--------------余额不足!--------------");
+                                    System.out.println("---------余额为" + cardService.getMoney(sId) + "----------");
+                                }
+                                break;
+                            case 2:
+                                System.out.println("--------------要购买的数量--------------");
+                                BigDecimal numBook = scanner.nextBigDecimal();
+                                if (cardService.shopping(sId, book, numBook)) {
+                                    System.out.println("--------------购买成功--------------");
+                                } else {
+                                    System.out.println("--------------余额不足!--------------");
+                                    System.out.println("---------余额为" + cardService.getMoney(sId) + "----------");
+                                }
+                                break;
+                            case 3:
+                                System.out.println("--------------要购买的数量--------------");
+                                BigDecimal numPen = scanner.nextBigDecimal();
+                                if (cardService.shopping(sId, pen, numPen)) {
+                                    System.out.println("--------------购买成功--------------");
+                                } else {
+                                    System.out.println("--------------余额不足!--------------");
+                                    System.out.println("---------余额为" + cardService.getMoney(sId) + "----------");
+                                }
+                                break;
+                            default:
+                                System.out.println("输入错误！");
+                        }
+                        // 输入正确退出
+                        if (chos == 1 || chos ==2 || chos ==3) {
+                            break;
+                        }
+                    }
+                    break;
+                case 3:
+                    System.out.println("---------余额为：" + cardService.getMoney(sId) + "---------");
+                    break;
+                case 4:
+                    System.exit(0);
+                default:
+                    System.out.println("输入错误！");
             }
         }
     }
 
-    public static void show() {
+    private static void show() {
         System.out.println("----------------------- ---------------");
         System.out.println("---------------饭卡系统-----------------");
         System.out.println("---------------请输入学号---------------");

@@ -46,11 +46,11 @@ public class CardService {
      * @param password 密码
      * @return true false
      */
-    public Boolean login(String sId, String password) {
+    public boolean login(String sId, String password) {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
-        Boolean result = null;
+        boolean result = false;
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             connection = DriverManager.getConnection(URL, USER, PASSWORD);
@@ -74,11 +74,12 @@ public class CardService {
      * @param money 充值金额
      * @param sId   学号
      */
-    public void recharge(double money, String sId) {
+    public boolean recharge(double money, String sId) {
         Connection connection = null;
         PreparedStatement addStatement = null;
         PreparedStatement subStatement = null;
         ResultSet balanceSet = null;
+        boolean result = false;
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             connection = DriverManager.getConnection(URL, USER, PASSWORD);
@@ -94,16 +95,16 @@ public class CardService {
                 subStatement.setBigDecimal(1, decimalMoney);
                 addStatement.executeUpdate();
                 subStatement.executeUpdate();
-            } else {
-                System.out.println("--------您绑定银行卡的金额不足!--------");
-                System.out.println("--------银行卡的金额为：" + balance + "--------");
+                result = true;
             }
+
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         } finally {
             close(connection, addStatement, balanceSet);
             close(connection, subStatement, balanceSet);
         }
+        return result;
     }
 
     /**
